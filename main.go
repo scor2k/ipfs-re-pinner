@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -43,6 +44,42 @@ func main() {
 					if errPin != nil {
 						log.Printf("[ERROR] %+v", errPin)
 					}
+					return nil
+				},
+			},
+			{
+				Name:  "download",
+				Usage: "download CID from IPFS site",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "ipfs",
+						Required: true,
+						Usage:    "for example: https://old-ipfs-server.io:5001",
+					},
+					&cli.StringFlag{
+						Name:     "dir",
+						Required: true,
+						Usage:    "directory to save CID",
+					},
+					&cli.StringFlag{
+						Name:     "cid",
+						Required: true,
+						Usage:    "CID hash",
+					},
+				},
+				Action: func(c *cli.Context) error {
+					data, _, fileExt, errGet := getIPFS(c.String("ipfs"), c.String("cid"))
+					if errGet != nil {
+						log.Fatalf("[ERROR] %+v", errGet)
+					}
+
+					fileName := filepath.Join(c.String("dir"), fmt.Sprintf("%s%s", c.String("cid"), fileExt))
+
+					errSaveFile := os.WriteFile(fileName, data, 0644)
+					if errSaveFile != nil {
+						log.Fatalf("[ERROR] %+v", errGet)
+					}
+					log.Printf("[INFO] File %s was successfully saved", fileName)
 					return nil
 				},
 			},
