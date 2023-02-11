@@ -24,6 +24,12 @@ func main() {
 				Name:  "re-pin",
 				Usage: "specify old and new servers + CID",
 				Flags: []cli.Flag{
+					&cli.Int64Flag{
+						Name:     "timeout",
+						Required: false,
+						Value:    int64(10),
+						Usage:    "HTTP Request timeout (GET only, seconds)",
+					},
 					&cli.StringFlag{
 						Name:     "old",
 						Required: true,
@@ -40,7 +46,7 @@ func main() {
 						Usage:    "CID hash",
 					}},
 				Action: func(c *cli.Context) error {
-					errPin := rePinCID(c.String("old"), c.String("new"), c.String("cid"))
+					errPin := rePinCID(c.String("old"), c.String("new"), c.String("cid"), c.Int64("timeout"))
 					if errPin != nil {
 						log.Printf("[ERROR] %+v", errPin)
 					}
@@ -66,9 +72,15 @@ func main() {
 						Required: true,
 						Usage:    "CID hash",
 					},
+					&cli.Int64Flag{
+						Name:     "timeout",
+						Required: false,
+						Value:    int64(10),
+						Usage:    "HTTP Request timeout (seconds)",
+					},
 				},
 				Action: func(c *cli.Context) error {
-					data, _, fileExt, errGet := getIPFS(c.String("ipfs"), c.String("cid"))
+					data, _, fileExt, errGet := getIPFS(c.String("ipfs"), c.String("cid"), c.Int64("timeout"))
 					if errGet != nil {
 						log.Fatalf("[ERROR] %+v", errGet)
 					}
@@ -94,8 +106,8 @@ func main() {
 }
 
 // rePinCID - download file / upload file to the new IPFS / pin file on the new IPFS
-func rePinCID(oldIPFSHost string, newIPFSHost string, CID string) error {
-	data, fileType, fileExtension, errGet := getIPFS(oldIPFSHost, CID)
+func rePinCID(oldIPFSHost string, newIPFSHost string, CID string, getTimeout int64) error {
+	data, fileType, fileExtension, errGet := getIPFS(oldIPFSHost, CID, getTimeout)
 	if errGet != nil {
 		return errGet
 	}
@@ -113,9 +125,9 @@ func rePinCID(oldIPFSHost string, newIPFSHost string, CID string) error {
 }
 
 // getIPFS - download file & return bytes, type, extension
-func getIPFS(ipfsHost string, CID string) ([]byte, string, string, error) {
+func getIPFS(ipfsHost string, CID string, timeout int64) ([]byte, string, string, error) {
 	shell := ipfsShell.NewShell(ipfsHost)
-	shell.SetTimeout(300 * time.Second)
+	shell.SetTimeout(time.Duration(timeout) * time.Second)
 
 	urlCID := fmt.Sprintf("/ipfs/%s", CID)
 	file, fileErr := shell.Cat(urlCID)
