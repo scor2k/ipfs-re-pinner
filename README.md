@@ -1,6 +1,10 @@
 # ipfs-re-pinner
 Tool to re-pin your CIDs from one IPFS node to another
 
+Also, it can help you to:
+ - download file from IPFS
+ - upload file to IPFS via https://web3.storage service (provide your token via ENV)
+
 ## how to build
 
 ```shell
@@ -29,4 +33,10 @@ go build -o ipfs-re-pinner
 ./ipfs-re-pinner download --timeout 5 --ipfs http://dummy-ipfs-server:5001 --dir backup --cid QmbMQkxgyCVDZkxcm1Sx5a7BhZ2ZmvQvXrfmshoYUSirbK
                           ^^^^^^^^^^^^
                         timeout 5 seconds
+```
+
+### hot to upload files to the web3.storage service
+```shell
+export WEB3_STORAGE_TOKEN=aaaaaaaa
+./ipfs-re-pinner upload-web3 --file ~/tmp/ipfs/Qma2uX5KD2W9nwYjVdi6CQJabb5a245o5Qn8JBCE97eAMm.png
 ```
